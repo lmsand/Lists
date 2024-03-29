@@ -9,6 +9,10 @@ const MyList = () => {
   const [nextPage, setNextPage] = useState("https://rickandmortyapi.com/api/character");
 
   const fetchNextPage = async () => {
+    if (loading) {
+      return
+    }
+
     setLoading(true);
     const response = await fetch(nextPage);
     const responseJson = await response.json();
@@ -22,26 +26,18 @@ const MyList = () => {
     setLoading(false);
   }
 
-  useEffect(() => { // component mounted
-    fetchNextPage();
-  }, []);
-
+  useEffect(() => {
+    fetchNextPage()
+  }, [])
 
   return (
     <FlatList
       data={items}
       renderItem={({ item }) => <CharacterListItem character={item} />}
       contentContainerStyle={{ gap: 10 }}
-      ListFooterComponent={() => (
-        <View>
-           {/* will always be below existing items */}
-          {loading && <ActivityIndicator />}
-
-          <Text style={{ alignSelf: "center", fontSize: 20, color: "blue" }} onPress={fetchNextPage}>
-          Load more
-        </Text>
-        </View>
-      )}
+      onEndReached={fetchNextPage}
+      onEndReachedThreshold={3}
+      ListFooterComponent={() => loading && <ActivityIndicator />}
     />
   );
 };

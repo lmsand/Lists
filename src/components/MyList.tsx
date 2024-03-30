@@ -3,18 +3,20 @@ import CharacterListItem from "./CharacterListItem";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { useState, useEffect } from "react";
 
+const initialPage = 'https://rickandmortyapi.com/api/character'
+
 const MyList = () => {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
-  const [nextPage, setNextPage] = useState("https://rickandmortyapi.com/api/character");
+  const [nextPage, setNextPage] = useState('');
 
-  const fetchNextPage = async () => {
+  const fetchPage = async (url: string) => {
     if (loading) {
       return
     }
 
     setLoading(true);
-    const response = await fetch(nextPage);
+    const response = await fetch(url);
     const responseJson = await response.json();
     // console.log(JSON.stringify(responseJson, null , 2)) user friendly view of the json in the console
 
@@ -26,8 +28,14 @@ const MyList = () => {
     setLoading(false);
   }
 
+  const onRefresh = () => {
+    setItems([])
+    setNextPage(initialPage)
+    fetchPage(initialPage)
+  }
+
   useEffect(() => {
-    fetchNextPage()
+    fetchPage(initialPage)
   }, [])
 
   return (
@@ -35,9 +43,12 @@ const MyList = () => {
       data={items}
       renderItem={({ item }) => <CharacterListItem character={item} />}
       contentContainerStyle={{ gap: 10 }}
-      onEndReached={fetchNextPage}
+      onEndReached={() => fetchPage(nextPage)}
       onEndReachedThreshold={3}
       ListFooterComponent={() => loading && <ActivityIndicator />}
+      refreshing={loading}
+      onRefresh={onRefresh}
+      // debug={true}
     />
   );
 };
